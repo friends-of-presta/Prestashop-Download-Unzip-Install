@@ -172,6 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </center>
                 La version de votre PHP n'est peut-être pas compatible avec la version Prestashop que vous allez installer.<br>
             <br>
+                <a href="https://devdocs.prestashop-project.org/9/basics/installation/system-requirements/" target="_blank">Vérifiez ici les prérequis pour la version 9.x</a><br>  
                 <a href="https://devdocs.prestashop-project.org/8/basics/installation/system-requirements/" target="_blank">Vérifiez ici les prérequis pour la version 8.x</a><br>  
                 <a href="https://devdocs.prestashop-project.org/1.7/basics/installation/system-requirements/" target="_blank">Vérifiez ici les prérequis pour la version 1.7.x</a><br><br>
              <div class="info-box">
