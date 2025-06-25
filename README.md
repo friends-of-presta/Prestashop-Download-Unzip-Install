@@ -1,7 +1,7 @@
 # PrestaShop Download | Unzip | Install
 
 ## À propos du projet
-Ce script PHP a été conçu pour simplifier la vie des développeurs travaillant avec PrestaShop. Il permet de lister et de télécharger automatiquement les différentes versions de PrestaShop directement depuis le dépôt GitHub officiel. L'objectif est de faciliter et d'accélérer le processus d'installation de PrestaShop pour la communauté de développeurs.
+Ce script PHP a été conçu pour simplifier la vie des développeurs travaillant avec PrestaShop. Il permet de lister et de télécharger automatiquement les différentes versions de PrestaShop directement depuis le dépôt [GitHub officiel](https://github.com/PrestaShop/PrestaShop) pour les verisons < 9.0.0 pour les versions supérieures [ce dépôt](https://github.com/jbromain/prestashop-community) est utilisé vu que PrestaShop ne propose plus de Build depuis la version 9.0.0. L'objectif est de faciliter et d'accélérer le processus d'installation de PrestaShop pour la communauté de développeurs.
 
 ## Fonctionnalités
 - **Liste des versions disponibles :** Affiche toutes les versions de PrestaShop disponibles sur le dépôt GitHub.
@@ -20,7 +20,8 @@ Ce script PHP a été conçu pour simplifier la vie des développeurs travaillan
 2. Placez le script dans le répertoire souhaité sur votre serveur.
 
 ## Utilisation
-Ouvrez le script dans votre navigateur web. Suivez les instructions à l'écran pour sélectionner, télécharger et, si vous le souhaitez, décompresser la version de PrestaShop de votre choix.
+- Ouvrez le script dans votre navigateur web. Suivez les instructions à l'écran pour sélectionner, télécharger et, si vous le souhaitez, décompresser la version de PrestaShop de votre choix.
+- Vous devez supprimer le script de votre hébergement après utilisation.
 
 ## Contribution
 Les contributions à ce projet sont bienvenues. Si vous avez des suggestions, des améliorations ou des corrections, n'hésitez pas à créer une 'issue' ou un 'pull request'.
