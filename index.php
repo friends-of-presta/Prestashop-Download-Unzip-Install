@@ -91,29 +91,13 @@
             max-width: 600px;
             margin: 0 auto;
         }
-        .header .features {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        .header .feature {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.95em;
-            opacity: 0.9;
-        }
-        .header .feature-icon {
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
+        .debug-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9em;
         }
     </style>
 </head>
@@ -129,9 +113,11 @@
         <?php
         function getRepositoryInfo($version) {
             // Détermine le dépôt à utiliser selon la version
-            $versionNumber = floatval(str_replace(['v', '.0', '.1', '.2', '.3', '.4', '.5', '.6', '.7', '.8', '.9'], ['', '', '', '', '', '', '', '', '', '', ''], $version));
+            $cleanVersion = str_replace('v', '', $version);
+            $versionParts = explode('.', $cleanVersion);
+            $majorVersion = intval($versionParts[0]);
             
-            if ($versionNumber >= 9.0) {
+            if ($majorVersion >= 9) {
                 return [
                     'repo' => 'jbromain/prestashop-community',
                     'api_url' => 'https://api.github.com/repos/jbromain/prestashop-community/tags',
@@ -146,56 +132,95 @@
             }
         }
 
-        function getAllPrestaShopVersions() {
+        function getAllVersionsFromRepo($repoInfo, $repoName, $debug = false) {
+            $allTags = [];
+            $page = 1;
+            $perPage = 100; // Maximum autorisé par GitHub
+            
+            $opts = [
+                "http" => [
+                    "method" => "GET",
+                    "header" => "User-Agent: PrestaShop-Downloader",
+                    "timeout" => 15
+                ]
+            ];
+            $context = stream_context_create($opts);
+            
+            do {
+                $url = $repoInfo['api_url'] . "?per_page={$perPage}&page={$page}";
+                if ($debug) echo "<div class='debug-info'>📥 Récupération page {$page} depuis {$repoName}...</div>";
+                
+                $json = @file_get_contents($url, false, $context);
+                if (!$json) {
+                    if ($debug) echo "<div class='debug-info'>⚠ Erreur lors de la récupération de la page {$page}</div>";
+                    break;
+                }
+                
+                $tags = json_decode($json, true);
+                if (!$tags || !is_array($tags)) {
+                    if ($debug) echo "<div class='debug-info'>⚠ Erreur de parsing JSON pour la page {$page}</div>";
+                    break;
+                }
+                
+                if (empty($tags)) {
+                    if ($debug) echo "<div class='debug-info'>✓ Fin des résultats à la page {$page}</div>";
+                    break;
+                }
+                
+                foreach ($tags as $tag) {
+                    $allTags[] = [
+                        'version' => $tag['name'],
+                        'repo' => $repoInfo['repo']
+                    ];
+                }
+                
+                if ($debug) echo "<div class='debug-info'>✓ " . count($tags) . " versions récupérées sur cette page</div>";
+                $page++;
+                
+                // Pause pour éviter de surcharger l'API
+                usleep(100000); // 0.1 seconde
+                
+            } while (count($tags) === $perPage); // Continue tant qu'on a une page pleine
+            
+            return $allTags;
+        }
+
+        function getAllPrestaShopVersions($debug = false) {
             $allVersions = [];
             
-            // Récupérer les versions depuis le dépôt officiel (< v9)
+            // Récupération depuis le dépôt officiel (toutes versions)
             $officialRepo = [
                 'repo' => 'PrestaShop/PrestaShop',
                 'api_url' => 'https://api.github.com/repos/PrestaShop/PrestaShop/tags'
             ];
             
-            $opts = [
-                "http" => [
-                    "method" => "GET",
-                    "header" => "User-Agent: PrestaShop-Downloader"
-                ]
-            ];
-            $context = stream_context_create($opts);
+            if ($debug) echo "<div class='debug-info'>🔍 Récupération des versions depuis le dépôt officiel...</div>";
+            $officialVersions = getAllVersionsFromRepo($officialRepo, 'Dépôt Officiel', $debug);
+            $allVersions = array_merge($allVersions, $officialVersions);
+            if ($debug) echo "<div class='debug-info'>✅ " . count($officialVersions) . " versions trouvées dans le dépôt officiel</div>";
             
-            // Récupération depuis le dépôt officiel
-            $json = @file_get_contents($officialRepo['api_url'], false, $context);
-            if ($json) {
-                $tags = json_decode($json, true);
-                foreach ($tags as $tag) {
-                    $allVersions[$tag['name']] = [
-                        'version' => $tag['name'],
-                        'repo' => $officialRepo['repo']
-                    ];
-                }
-            }
-            
-            // Récupérer les versions depuis le dépôt communautaire (>= v9)
+            // Récupération depuis le dépôt communautaire (versions 9+)
             $communityRepo = [
                 'repo' => 'jbromain/prestashop-community',
                 'api_url' => 'https://api.github.com/repos/jbromain/prestashop-community/tags'
             ];
             
-            $json = @file_get_contents($communityRepo['api_url'], false, $context);
-            if ($json) {
-                $tags = json_decode($json, true);
-                foreach ($tags as $tag) {
-                    $allVersions[$tag['name']] = [
-                        'version' => $tag['name'],
-                        'repo' => $communityRepo['repo']
-                    ];
-                }
-            }
+            if ($debug) echo "<div class='debug-info'>🔍 Récupération des versions depuis le dépôt communautaire...</div>";
+            $communityVersions = getAllVersionsFromRepo($communityRepo, 'Dépôt Communautaire', $debug);
+            $allVersions = array_merge($allVersions, $communityVersions);
+            if ($debug) echo "<div class='debug-info'>✅ " . count($communityVersions) . " versions trouvées dans le dépôt communautaire</div>";
             
-            // Trier les versions (les plus récentes en premier)
-            uksort($allVersions, function($a, $b) {
-                return version_compare($b, $a);
+            // Tri des versions (les plus récentes en premier)
+            usort($allVersions, function($a, $b) {
+                // Normalisation des versions pour le tri
+                $versionA = str_replace('v', '', $a['version']);
+                $versionB = str_replace('v', '', $b['version']);
+                
+                // Comparaison des versions
+                return version_compare($versionB, $versionA);
             });
+            
+            if ($debug) echo "<div class='debug-info'>📊 Total final: " . count($allVersions) . " versions disponibles</div>";
             
             return $allVersions;
         }
@@ -203,14 +228,9 @@
         function downloadPrestaShop($version) {
             $repoInfo = getRepositoryInfo($version);
             
-            // Format du nom de fichier selon le dépôt
-            if ($repoInfo['repo'] === 'jbromain/prestashop-community') {
-                $zipFile = "prestashop_{$version}.zip";
-                $url = $repoInfo['download_base'] . "{$version}/prestashop_{$version}.zip";
-            } else {
-                $zipFile = "prestashop_{$version}.zip";
-                $url = $repoInfo['download_base'] . "{$version}/prestashop_{$version}.zip";
-            }
+            // Format du nom de fichier
+            $zipFile = "prestashop_{$version}.zip";
+            $url = $repoInfo['download_base'] . "{$version}/prestashop_{$version}.zip";
             
             echo "<div class='source-info'>";
             echo "<strong>Téléchargement depuis :</strong> " . $repoInfo['repo'] . "<br>";
@@ -278,7 +298,7 @@
                 }
             }
         } else {
-            $allVersions = getAllPrestaShopVersions();
+            $allVersions = getAllPrestaShopVersions(false); // false = pas de debug
             echo "<div class='version-selector'>";
             echo "<h3>🎯 Quelle version souhaitez-vous installer ?</h3>";
             echo "<form method='post'>";
