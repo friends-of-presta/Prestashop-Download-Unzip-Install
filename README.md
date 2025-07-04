@@ -29,8 +29,9 @@ Les contributions à ce projet sont bienvenues. Si vous avez des suggestions, de
 ## Licence
 Ce projet est distribué sous la licence spécifiée dans le fichier LICENSE.
 
-## Auteur
-- Proposé par [PROGERANCE.COM](https://progerance.com)
+## Auteurs
+- Proposé initialiement par [PROGERANCE.COM](https://progerance.com)
+- Autres contributeurs : [Touxten](https://github.com/Touxten)
 
 ## Soutien
 Si vous appréciez ce projet, vous pouvez soutenir l'auteur en lui offrant un café : <a href="https://www.buymeacoffee.com/progerance" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
